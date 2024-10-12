@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -21,26 +22,43 @@ public class Test2SpringBootApplication implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
+        try {
+            Path filePath = Paths.get("products.json");
 
-        Path filePath = Paths.get("products.json");
+            String jsonInput = Files.readString(filePath);
 
-        String jsonInput = Files.readString(filePath);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+            JsonNode root = mapper.readTree(jsonInput);
 
-        JsonNode root = mapper.readTree(jsonInput);
 
-        print(root);
+            Scanner sc = new Scanner(System.in);
+            String str = sc.nextLine();
+            sc.close();
 
-        printRecursive(root, 0);
-
-        System.out.println(findPath(root, findMax(root, 0), ""));
-
+            switch (str) {
+                case "print":
+                    print(root);
+                    System.exit(0);
+                case "printRecursive":
+                    printRecursive(root, 0);
+                    System.exit(0);
+                case "findMax":
+                    System.out.println(findPath(root, findMax(root, 0), ""));
+                    System.exit(0);
+                default:
+                    System.out.println("Method not found!");
+                    System.exit(1);
+            }
+        } catch (IOException exception) {
+            System.err.println("File error: " + exception.getMessage());
+            System.exit(11);
+        }
     }
 
-    private void print(JsonNode root) throws Exception {
+    public void print(JsonNode root) {
 
         Iterator<String> firstLevelKeys = root.fieldNames();
 
@@ -67,7 +85,7 @@ public class Test2SpringBootApplication implements CommandLineRunner {
         }
     }
 
-    private void printRecursive(JsonNode root, int n) {
+    public void printRecursive(JsonNode root, int n) {
         if (root.isObject()) {
             Iterator<String> fieldNames = root.fieldNames();
 
@@ -89,7 +107,7 @@ public class Test2SpringBootApplication implements CommandLineRunner {
     }
 
 
-    private int findMax(JsonNode root, int max) {
+    public int findMax(JsonNode root, int max) {
         if (root.isObject()) {
             Iterator<String> fieldNames = root.fieldNames();
             while (fieldNames.hasNext()) {
@@ -103,7 +121,7 @@ public class Test2SpringBootApplication implements CommandLineRunner {
         return max;
     }
 
-    private String findPath(JsonNode root, int value, String path) {
+    public String findPath(JsonNode root, int value, String path) {
         if (root.isObject()) {
             Iterator<String> fieldNames = root.fieldNames();
             while (fieldNames.hasNext()) {
